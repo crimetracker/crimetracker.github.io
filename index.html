@@ -222,6 +222,7 @@
        ========================================================= */
     const CATEGORIES = ["전체", "살인", "강도", "강간", "폭행", "절도", "마약", "보이스피싱", "교통범죄", "사기", "기타"];
     const HOT_LIMIT = 10;   // 이주의 핫뉴스에 보여줄 최대 개수
+    const PAST_WEEKS = 2;   // 지난 핫뉴스에 보여줄 주 수 (이번 주 제외, 전주·전전주)
 
     /* ===================== 아래는 수정하지 않아도 돼요 ===================== */
     const $menu = document.getElementById("menu");
@@ -256,9 +257,14 @@
     const inWeek = key => articles.filter(a => weekKeyOf(parseDate(a.date)) === key).sort(byNewest);
     const hotOf = key => inWeek(key).slice(0, HOT_LIMIT);
     function pastWeeks() {
-      const now = thisWeek();
-      const keys = [...new Set(articles.map(a => weekKeyOf(parseDate(a.date))))].filter(k => k < now);
-      return keys.sort().reverse();
+      const start = parseDate(thisWeek());
+      const keys = [];
+      for (let i = 1; i <= PAST_WEEKS; i++) {
+        const w = new Date(start);
+        w.setDate(w.getDate() - 7 * i);
+        keys.push(fmt(w));
+      }
+      return keys.filter(k => inWeek(k).length);   // 기사가 있는 주만
     }
 
     /* ---- 화면 상태 (주소 # 뒤에 저장) ---- */
@@ -322,7 +328,7 @@
     function viewArchive() {
       const weeks = pastWeeks();
       return `<h1 class="page-title">📅 지난 핫뉴스</h1>
-              <p class="page-desc">지난 주들의 핫뉴스가 주별로 저장돼 있어요.</p>
+              <p class="page-desc">전주와 전전주의 핫뉴스예요. 더 이전 기사는 메뉴의 '전체'나 범죄 유형에서 볼 수 있어요.</p>
               ${weeks.length ? `<ul class="weeks">${weeks.map(k => `
                 <li class="week" data-week="${k}">
                   <strong>${weekLabel(k)}</strong>
