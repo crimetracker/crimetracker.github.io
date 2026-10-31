@@ -1,334 +1,89 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>범죄추적기</title>
-
-  <!-- ★ 링크 공유 시 보이는 미리보기 설정 ★ -->
-    <meta property="og:image" content="https://crimetracker.github.io/og-image.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta name="description" content="공개 보도된 범죄 소식을 유형별로 모아 간략하게 요약합니다.">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="범죄추적기">
-  <meta property="og:title" content="범죄추적기">
-  <meta property="og:description" content="공개 보도된 범죄 소식을 유형별로 모아 간략하게 요약합니다.">
-  <meta property="og:url" content="https://crimetracker.github.io/">
-  <!-- 미리보기 이미지: 저장소에 preview.png 를 올리면 자동으로 사용돼요 (권장 크기 1200x630) -->
-  <meta property="og:image" content="https://crimetracker.github.io/preview.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="범죄추적기">
-  <style>
-    :root {
-      --side-bg: #0f172a;
-      --side-text: #cbd5e1;
-      --side-active: #e11d48;
-      --bg: #f1f5f9;
-      --card: #ffffff;
-      --text: #0f172a;
-      --muted: #64748b;
-      --line: #e2e8f0;
-      --accent: #e11d48;
-    }
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-    }
-
-    /* ===== 왼쪽 메뉴 ===== */
-    .sidebar {
-      position: fixed; top: 0; left: 0; bottom: 0;
-      width: 240px;
-      background: var(--side-bg);
-      color: var(--side-text);
-      padding: 24px 16px;
-      display: flex; flex-direction: column;
-      z-index: 20;
-      transition: transform .25s ease;
-    }
-    .logo {
-      font-size: 22px; font-weight: 800; color: #fff;
-      padding: 0 8px 20px; border-bottom: 1px solid #1e293b; margin-bottom: 16px;
-      cursor: pointer;
-    }
-    .logo span { color: var(--side-active); }
-    .menu { list-style: none; display: flex; flex-direction: column; gap: 4px; }
-    .menu button {
-      width: 100%; text-align: left;
-      background: none; border: 0; color: inherit;
-      font-size: 15px; padding: 10px 12px; border-radius: 8px;
-      cursor: pointer; display: flex; justify-content: space-between;
-    }
-    .menu button:hover { background: #1e293b; color: #fff; }
-    .menu button.active { background: var(--side-active); color: #fff; font-weight: 700; }
-    .menu .count { font-size: 12px; opacity: .7; }
-    .side-foot { margin-top: auto; font-size: 12px; color: #64748b; padding: 0 8px; }
-
-    /* ===== 모바일 상단바 ===== */
-    .topbar {
-      display: none;
-      position: sticky; top: 0; z-index: 10;
-      background: var(--side-bg); color: #fff;
-      padding: 12px 16px; align-items: center; gap: 12px;
-    }
-    .topbar button { background: none; border: 0; color: #fff; font-size: 24px; cursor: pointer; }
-    .topbar strong { font-size: 18px; }
-    .overlay { display: none; }
-
-    /* ===== 본문 ===== */
-    main { margin-left: 240px; padding: 32px; max-width: 1000px; }
-    .page-title { font-size: 24px; margin-bottom: 4px; }
-    .page-desc { color: var(--muted); margin-bottom: 20px; font-size: 14px; }
-    .search {
-      width: 100%; padding: 12px 14px; font-size: 15px;
-      border: 1px solid var(--line); border-radius: 10px; margin-bottom: 20px;
-      background: #fff;
-    }
-
-    /* 기사 목록 (제목만 보이고 클릭해야 열림) */
-    .list { list-style: none; display: flex; flex-direction: column; gap: 12px; }
-    .item {
-      background: var(--card); border: 1px solid var(--line); border-radius: 12px;
-      padding: 18px 20px; cursor: pointer; transition: border-color .15s, transform .15s;
-    }
-    .item:hover { border-color: var(--accent); transform: translateY(-2px); }
-    .item.has-img { display: flex; gap: 16px; align-items: center; }
-    .item .thumb {
-      width: 120px; height: 80px; flex-shrink: 0;
-      object-fit: cover; border-radius: 8px; background: var(--line);
-    }
-    .item .text { min-width: 0; }
-    .detail-img { width: 100%; border-radius: 10px; margin-bottom: 6px; display: block; }
-    .img-caption { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
-    @media (max-width: 500px) {
-      .item .thumb { width: 88px; height: 64px; }
-    }
-    .meta { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-    .tag {
-      background: #ffe4e6; color: var(--accent); font-weight: 700;
-      padding: 2px 8px; border-radius: 999px; font-size: 12px;
-    }
-    .item h3 { font-size: 17px; margin-top: 6px; }
-    .more { font-size: 13px; color: var(--accent); margin-top: 6px; }
-    .empty { color: var(--muted); padding: 40px 0; text-align: center; }
-
-    /* 기사 상세 */
-    .detail { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 28px; }
-    .back {
-      background: none; border: 1px solid var(--line); border-radius: 8px;
-      padding: 8px 14px; cursor: pointer; font-size: 14px; margin-bottom: 20px;
-    }
-    .back:hover { border-color: var(--accent); color: var(--accent); }
-    .detail h2 { font-size: 24px; margin: 10px 0 16px; }
-    .summary-box {
-      background: #f8fafc; border-left: 4px solid var(--accent);
-      padding: 12px 16px; border-radius: 6px; margin-bottom: 20px; font-size: 15px;
-    }
-    .detail .body p { margin-bottom: 14px; }
-    .source { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
-    .source a { color: var(--accent); }
-
-    /* ===== 모바일 ===== */
-    @media (max-width: 800px) {
-      .topbar { display: flex; }
-      .sidebar { transform: translateX(-100%); }
-      .sidebar.open { transform: translateX(0); }
-      .overlay.show { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 15; }
-      main { margin-left: 0; padding: 20px 16px; }
-      .detail { padding: 20px; }
-    }
-  </style>
-</head>
-<body>
-
-  <!-- 모바일 상단바 -->
-  <div class="topbar">
-    <button id="menuBtn" aria-label="메뉴 열기">☰</button>
-    <strong>범죄추적기</strong>
-  </div>
-  <div class="overlay" id="overlay"></div>
-
-  <!-- 왼쪽 메뉴 -->
-  <nav class="sidebar" id="sidebar">
-    <div class="logo" id="logo">범죄<span>추적기</span></div>
-    <ul class="menu" id="menu"></ul>
-    <div class="side-foot">공개 보도를 요약한 정보입니다.<br>원문은 각 기사의 출처를 확인하세요.</div>
-  </nav>
-
-  <main id="main"></main>
-
-  <script>
-    /* =========================================================
-       ★ 기사 추가하는 곳 ★
-       아래 { ... } 묶음 하나가 기사 하나예요.
-       복사해서 붙여넣고 내용만 바꾸면 새 기사가 생겨요.
-       id는 기사마다 다른 숫자로 해주세요.
-       ========================================================= */
-    const articles = [
-      {
-        id: 1,
-        category: "사기",
-        date: "2026-10-30",
-        region: "서울",
-        title: "(예시) 택배 문자 위장 스미싱 피해 잇따라",
-        summary: "택배 배송 조회를 가장한 문자 속 링크를 누르면 악성 앱이 설치되는 수법입니다.",
-        image: "",          // 이미지 주소. 예: "images/smishing.jpg"  (없으면 "" 로 비워두기)
-        imageCaption: "",   // 이미지 아래 설명. 예: "사진: 직접 촬영"  (없으면 "")
-        content: [
-          "이곳에 기사 요약 본문을 적어요. 문단마다 따옴표로 묶고 쉼표로 구분하면 됩니다.",
-          "두 번째 문단입니다. 실명이나 주소 같은 개인정보는 넣지 않는 게 안전해요."
-        ],
-        sourceName: "출처 언론사 이름",
-        sourceUrl: "#"
-      },
-      {
-        id: 2,
-        category: "사이버범죄",
-        date: "2026-10-28",
-        region: "전국",
-        title: "(예시) 중고거래 앱 계정 도용 주의",
-        summary: "도용된 계정으로 물건을 올린 뒤 입금만 받고 잠적하는 사례입니다.",
-        content: [
-          "기사 요약 본문 예시입니다.",
-          "피해 예방 방법 등을 정리해 두면 좋아요."
-        ],
-        sourceName: "출처 언론사 이름",
-        sourceUrl: "#"
-      },
-      {
-        id: 3,
-        category: "절도",
-        date: "2026-10-25",
-        region: "경기",
-        title: "(예시) 무인점포 절도 증가",
-        summary: "야간 무인점포를 노린 절도가 늘고 있다는 내용입니다.",
-        content: [
-          "기사 요약 본문 예시입니다."
-        ],
-        sourceName: "출처 언론사 이름",
-        sourceUrl: "#"
-      }
-    ];
-
-    /* 메뉴 목록 (순서를 바꾸거나 항목을 추가해도 돼요) */
-    const categories = ["전체", "사기", "사이버범죄", "폭력", "절도", "마약", "기타"];
-
-    /* ===================== 아래는 수정하지 않아도 돼요 ===================== */
-    const $menu = document.getElementById("menu");
-    const $main = document.getElementById("main");
-    const $sidebar = document.getElementById("sidebar");
-    const $overlay = document.getElementById("overlay");
-    let searchText = "";
-
-    function esc(s) {
-      return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
-    }
-
-    function getState() {
-      const h = decodeURIComponent(location.hash.slice(1));
-      if (h.startsWith("article=")) return { article: Number(h.split("=")[1]) };
-      if (h.startsWith("cat=")) return { cat: h.split("=")[1] };
-      return { cat: "전체" };
-    }
-
-    function renderMenu(activeCat) {
-      $menu.innerHTML = categories.map(c => {
-        const n = c === "전체" ? articles.length : articles.filter(a => a.category === c).length;
-        return `<li><button data-cat="${esc(c)}" class="${c === activeCat ? "active" : ""}">
-                  <span>${esc(c)}</span><span class="count">${n}</span></button></li>`;
-      }).join("");
-    }
-
-    function renderList(cat) {
-      const list = articles
-        .filter(a => cat === "전체" || a.category === cat)
-        .filter(a => (a.title + a.summary + a.region).includes(searchText))
-        .sort((a, b) => b.date.localeCompare(a.date));
-
-      $main.innerHTML = `
-        <h1 class="page-title">${esc(cat === "전체" ? "전체 사건" : cat)}</h1>
-        <p class="page-desc">제목을 누르면 기사 요약을 볼 수 있어요.</p>
-        <input class="search" id="search" placeholder="제목·지역으로 검색" value="${esc(searchText)}">
-        <ul class="list">
-          ${list.length ? list.map(a => `
-            <li class="item ${a.image ? "has-img" : ""}" data-id="${a.id}">
-              ${a.image ? `<img class="thumb" src="${esc(a.image)}" alt="" loading="lazy">` : ""}
-              <div class="text">
-                <div class="meta"><span class="tag">${esc(a.category)}</span>${esc(a.date)} · ${esc(a.region)}</div>
-                <h3>${esc(a.title)}</h3>
-                <div class="more">자세히 보기 →</div>
-              </div>
-            </li>`).join("") : `<li class="empty">해당하는 기사가 없어요.</li>`}
-        </ul>`;
-
-      const s = document.getElementById("search");
-      s.addEventListener("input", e => {
-        searchText = e.target.value;
-        renderList(cat);
-        const again = document.getElementById("search");
-        again.focus();
-        again.setSelectionRange(searchText.length, searchText.length);
-      });
-    }
-
-    function renderDetail(id) {
-      const a = articles.find(x => x.id === id);
-      if (!a) { location.hash = ""; return; }
-      $main.innerHTML = `
-        <button class="back" id="back">← 목록으로</button>
-        <article class="detail">
-          <div class="meta"><span class="tag">${esc(a.category)}</span>${esc(a.date)} · ${esc(a.region)}</div>
-          <h2>${esc(a.title)}</h2>
-          ${a.image ? `<img class="detail-img" src="${esc(a.image)}" alt="${esc(a.title)}">
-            <div class="img-caption">${esc(a.imageCaption || "")}</div>` : ""}
-          <div class="summary-box">${esc(a.summary)}</div>
-          <div class="body">${a.content.map(p => `<p>${esc(p)}</p>`).join("")}</div>
-          <div class="source">출처: <a href="${esc(a.sourceUrl)}" target="_blank" rel="noopener">${esc(a.sourceName)}</a></div>
-        </article>`;
-      document.getElementById("back").onclick = () => {
-        location.hash = "cat=" + encodeURIComponent(a.category);
-      };
-      window.scrollTo(0, 0);
-    }
-
-    function render() {
-      const st = getState();
-      if (st.article) {
-        const a = articles.find(x => x.id === st.article);
-        renderMenu(a ? a.category : "전체");
-        renderDetail(st.article);
-      } else {
-        renderMenu(st.cat);
-        renderList(st.cat);
-      }
-      closeMenu();
-    }
-
-    function openMenu() { $sidebar.classList.add("open"); $overlay.classList.add("show"); }
-    function closeMenu() { $sidebar.classList.remove("open"); $overlay.classList.remove("show"); }
-
-    $menu.addEventListener("click", e => {
-      const b = e.target.closest("button");
-      if (!b) return;
-      searchText = "";
-      location.hash = "cat=" + encodeURIComponent(b.dataset.cat);
-    });
-    $main.addEventListener("click", e => {
-      const item = e.target.closest(".item");
-      if (item) location.hash = "article=" + item.dataset.id;
-    });
-    document.getElementById("logo").onclick = () => { searchText = ""; location.hash = ""; };
-    document.getElementById("menuBtn").onclick = openMenu;
-    $overlay.onclick = closeMenu;
-    window.addEventListener("hashchange", render);
-
-    render();
-  </script>
-</body>
-</html>
+[
+  {
+    "id": 1,
+    "category": "보이스피싱",
+    "date": "2026-10-30",
+    "region": "서울",
+    "title": "(예시) 검찰 사칭 보이스피싱 피해 잇따라",
+    "summary": "수사기관을 사칭해 계좌가 범죄에 연루됐다며 돈을 옮기라고 요구하는 수법입니다.",
+    "keywords": ["보이스피싱", "기관사칭"],
+    "image": "",
+    "imageCaption": "",
+    "content": [
+      "여기에 요약 본문을 적어요. 문단마다 큰따옴표로 묶고 쉼표로 구분해요.",
+      "실명이나 주소 같은 개인정보는 넣지 않아요."
+    ],
+    "sourceName": "출처 언론사 이름",
+    "sourceUrl": "#"
+  },
+  {
+    "id": 2,
+    "category": "교통범죄",
+    "date": "2026-10-29",
+    "region": "경기",
+    "title": "(예시) 심야 음주운전 단속에서 무더기 적발",
+    "summary": "주말 심야 일제 단속에서 음주운전자가 다수 적발됐다는 내용입니다.",
+    "keywords": ["음주운전", "단속"],
+    "image": "",
+    "imageCaption": "",
+    "content": ["요약 본문 예시입니다."],
+    "sourceName": "출처 언론사 이름",
+    "sourceUrl": "#"
+  },
+  {
+    "id": 3,
+    "category": "사기",
+    "date": "2026-10-28",
+    "region": "인천",
+    "title": "(예시) 전세사기 피해 주택 추가 확인",
+    "summary": "같은 임대인 소유 주택에서 보증금 미반환 피해가 추가로 확인됐다는 내용입니다.",
+    "keywords": ["전세사기", "보증금"],
+    "image": "",
+    "imageCaption": "",
+    "content": ["요약 본문 예시입니다."],
+    "sourceName": "출처 언론사 이름",
+    "sourceUrl": "#"
+  },
+  {
+    "id": 4,
+    "category": "절도",
+    "date": "2026-10-27",
+    "region": "경기",
+    "title": "(예시) 무인점포 야간 절도 증가",
+    "summary": "야간에 무인점포를 노린 절도가 늘고 있다는 내용입니다.",
+    "keywords": ["무인점포", "절도"],
+    "image": "",
+    "imageCaption": "",
+    "content": ["요약 본문 예시입니다."],
+    "sourceName": "출처 언론사 이름",
+    "sourceUrl": "#"
+  },
+  {
+    "id": 5,
+    "category": "마약",
+    "date": "2026-10-23",
+    "region": "부산",
+    "title": "(예시) 항만 통해 밀반입 시도 적발",
+    "summary": "화물에 숨겨 마약을 들여오려던 시도가 세관 검사에서 적발됐다는 내용입니다.",
+    "keywords": ["마약", "밀반입"],
+    "image": "",
+    "imageCaption": "",
+    "content": ["요약 본문 예시입니다."],
+    "sourceName": "출처 언론사 이름",
+    "sourceUrl": "#"
+  },
+  {
+    "id": 6,
+    "category": "폭행",
+    "date": "2026-10-21",
+    "region": "대구",
+    "title": "(예시) 대중교통 내 폭행 사건 발생",
+    "summary": "버스 안에서 시비 끝에 폭행이 발생해 경찰이 수사 중이라는 내용입니다.",
+    "keywords": ["폭행", "대중교통"],
+    "image": "",
+    "imageCaption": "",
+    "content": ["요약 본문 예시입니다."],
+    "sourceName": "출처 언론사 이름",
+    "sourceUrl": "#"
+  }
+]
