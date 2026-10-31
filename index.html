@@ -253,7 +253,7 @@
     function fmt(d) { return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`; }
     function weekKeyOf(date) {
       const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-      d.setDate(d.getDate() - ((d.getDay() + 6) % 7));
+      d.setDate(d.getDate() - d.getDay());
       return fmt(d);
     }
     function weekLabel(key) {
