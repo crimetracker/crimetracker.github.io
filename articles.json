@@ -1,0 +1,89 @@
+[
+  {
+    "id": 1,
+    "category": "보이스피싱",
+    "date": "2026-10-30",
+    "region": "서울",
+    "title": "(예시) 검찰 사칭 보이스피싱 피해 잇따라",
+    "summary": "수사기관을 사칭해 계좌가 범죄에 연루됐다며 돈을 옮기라고 요구하는 수법입니다.",
+    "keywords": ["보이스피싱", "기관사칭"],
+    "image": "",
+    "imageCaption": "",
+    "content": [
+      "여기에 요약 본문을 적어요. 문단마다 큰따옴표로 묶고 쉼표로 구분해요.",
+      "실명이나 주소 같은 개인정보는 넣지 않아요."
+    ],
+    "sourceName": "출처 언론사 이름",
+    "sourceUrl": "#"
+  },
+  {
+    "id": 2,
+    "category": "교통범죄",
+    "date": "2026-10-29",
+    "region": "경기",
+    "title": "(예시) 심야 음주운전 단속에서 무더기 적발",
+    "summary": "주말 심야 일제 단속에서 음주운전자가 다수 적발됐다는 내용입니다.",
+    "keywords": ["음주운전", "단속"],
+    "image": "",
+    "imageCaption": "",
+    "content": ["요약 본문 예시입니다."],
+    "sourceName": "출처 언론사 이름",
+    "sourceUrl": "#"
+  },
+  {
+    "id": 3,
+    "category": "사기",
+    "date": "2026-10-28",
+    "region": "인천",
+    "title": "(예시) 전세사기 피해 주택 추가 확인",
+    "summary": "같은 임대인 소유 주택에서 보증금 미반환 피해가 추가로 확인됐다는 내용입니다.",
+    "keywords": ["전세사기", "보증금"],
+    "image": "",
+    "imageCaption": "",
+    "content": ["요약 본문 예시입니다."],
+    "sourceName": "출처 언론사 이름",
+    "sourceUrl": "#"
+  },
+  {
+    "id": 4,
+    "category": "절도",
+    "date": "2026-10-27",
+    "region": "경기",
+    "title": "(예시) 무인점포 야간 절도 증가",
+    "summary": "야간에 무인점포를 노린 절도가 늘고 있다는 내용입니다.",
+    "keywords": ["무인점포", "절도"],
+    "image": "",
+    "imageCaption": "",
+    "content": ["요약 본문 예시입니다."],
+    "sourceName": "출처 언론사 이름",
+    "sourceUrl": "#"
+  },
+  {
+    "id": 5,
+    "category": "마약",
+    "date": "2026-10-23",
+    "region": "부산",
+    "title": "(예시) 항만 통해 밀반입 시도 적발",
+    "summary": "화물에 숨겨 마약을 들여오려던 시도가 세관 검사에서 적발됐다는 내용입니다.",
+    "keywords": ["마약", "밀반입"],
+    "image": "",
+    "imageCaption": "",
+    "content": ["요약 본문 예시입니다."],
+    "sourceName": "출처 언론사 이름",
+    "sourceUrl": "#"
+  },
+  {
+    "id": 6,
+    "category": "폭행",
+    "date": "2026-10-21",
+    "region": "대구",
+    "title": "(예시) 대중교통 내 폭행 사건 발생",
+    "summary": "버스 안에서 시비 끝에 폭행이 발생해 경찰이 수사 중이라는 내용입니다.",
+    "keywords": ["폭행", "대중교통"],
+    "image": "",
+    "imageCaption": "",
+    "content": ["요약 본문 예시입니다."],
+    "sourceName": "출처 언론사 이름",
+    "sourceUrl": "#"
+  }
+]
