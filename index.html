@@ -4,6 +4,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>범죄추적기</title>
+
+  <!-- ★ 링크 공유 시 보이는 미리보기 설정 ★ -->
+  <meta name="description" content="공개 보도된 범죄 소식을 유형별로 모아 간략하게 요약합니다.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="범죄추적기">
+  <meta property="og:title" content="범죄추적기">
+  <meta property="og:description" content="공개 보도된 범죄 소식을 유형별로 모아 간략하게 요약합니다.">
+  <meta property="og:url" content="https://crimetracker.github.io/">
+  <!-- 미리보기 이미지: 저장소에 preview.png 를 올리면 자동으로 사용돼요 (권장 크기 1200x630) -->
+  <meta property="og:image" content="https://crimetracker.github.io/preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="범죄추적기">
   <style>
     :root {
       --side-bg: #0f172a;
@@ -81,6 +95,17 @@
       padding: 18px 20px; cursor: pointer; transition: border-color .15s, transform .15s;
     }
     .item:hover { border-color: var(--accent); transform: translateY(-2px); }
+    .item.has-img { display: flex; gap: 16px; align-items: center; }
+    .item .thumb {
+      width: 120px; height: 80px; flex-shrink: 0;
+      object-fit: cover; border-radius: 8px; background: var(--line);
+    }
+    .item .text { min-width: 0; }
+    .detail-img { width: 100%; border-radius: 10px; margin-bottom: 6px; display: block; }
+    .img-caption { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+    @media (max-width: 500px) {
+      .item .thumb { width: 88px; height: 64px; }
+    }
     .meta { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
     .tag {
       background: #ffe4e6; color: var(--accent); font-weight: 700;
@@ -150,6 +175,8 @@
         region: "서울",
         title: "(예시) 택배 문자 위장 스미싱 피해 잇따라",
         summary: "택배 배송 조회를 가장한 문자 속 링크를 누르면 악성 앱이 설치되는 수법입니다.",
+        image: "",          // 이미지 주소. 예: "images/smishing.jpg"  (없으면 "" 로 비워두기)
+        imageCaption: "",   // 이미지 아래 설명. 예: "사진: 직접 촬영"  (없으면 "")
         content: [
           "이곳에 기사 요약 본문을 적어요. 문단마다 따옴표로 묶고 쉼표로 구분하면 됩니다.",
           "두 번째 문단입니다. 실명이나 주소 같은 개인정보는 넣지 않는 게 안전해요."
@@ -227,10 +254,13 @@
         <input class="search" id="search" placeholder="제목·지역으로 검색" value="${esc(searchText)}">
         <ul class="list">
           ${list.length ? list.map(a => `
-            <li class="item" data-id="${a.id}">
-              <div class="meta"><span class="tag">${esc(a.category)}</span>${esc(a.date)} · ${esc(a.region)}</div>
-              <h3>${esc(a.title)}</h3>
-              <div class="more">자세히 보기 →</div>
+            <li class="item ${a.image ? "has-img" : ""}" data-id="${a.id}">
+              ${a.image ? `<img class="thumb" src="${esc(a.image)}" alt="" loading="lazy">` : ""}
+              <div class="text">
+                <div class="meta"><span class="tag">${esc(a.category)}</span>${esc(a.date)} · ${esc(a.region)}</div>
+                <h3>${esc(a.title)}</h3>
+                <div class="more">자세히 보기 →</div>
+              </div>
             </li>`).join("") : `<li class="empty">해당하는 기사가 없어요.</li>`}
         </ul>`;
 
@@ -252,6 +282,8 @@
         <article class="detail">
           <div class="meta"><span class="tag">${esc(a.category)}</span>${esc(a.date)} · ${esc(a.region)}</div>
           <h2>${esc(a.title)}</h2>
+          ${a.image ? `<img class="detail-img" src="${esc(a.image)}" alt="${esc(a.title)}">
+            <div class="img-caption">${esc(a.imageCaption || "")}</div>` : ""}
           <div class="summary-box">${esc(a.summary)}</div>
           <div class="body">${a.content.map(p => `<p>${esc(p)}</p>`).join("")}</div>
           <div class="source">출처: <a href="${esc(a.sourceUrl)}" target="_blank" rel="noopener">${esc(a.sourceName)}</a></div>
