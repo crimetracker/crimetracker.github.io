@@ -220,13 +220,18 @@
 
   <script>
     /* =========================================================
-       설정 (필요하면 여기만 바꾸세요)
+       ★ 설정 (필요하면 여기 숫자·글자만 바꾸세요) ★
        기사 내용은 articles.json 파일에서 추가·수정해요.
+
+       [기간 규칙]  (한 주 = 월요일 ~ 일요일, 매주 월요일에 자동으로 바뀜)
+       - 최신 뉴스   : 지난주 기사, 최신순 최대 HOT_LIMIT개
+       - 지난 핫뉴스 : 최신 뉴스 이전 PAST_WEEKS주(2~3주 전) 기사, 최신순 최대 PAST_LIMIT개
+       - 이번 주 기사와 그보다 오래된 기사 : 메뉴의 '전체'와 각 범죄 유형에서 볼 수 있음
        ========================================================= */
     const CATEGORIES = ["전체", "살인", "강도", "강간", "폭행", "절도", "마약", "보이스피싱", "교통범죄", "사기", "기타"];
-    const HOT_LIMIT = 10;   // 이주의 핫뉴스에 보여줄 최대 개수
-    const PAST_WEEKS = 2;   // 지난 핫뉴스에 넣을 주 수 (이번 주 제외, 전주·전전주)
-    const PAST_LIMIT = 20;  // 지난 핫뉴스에 보여줄 최대 개수
+    const HOT_LIMIT = 10;   // 최신 뉴스 최대 개수
+    const PAST_WEEKS = 2;   // 지난 핫뉴스에 넣을 주 수 (최신 뉴스 주 이전부터)
+    const PAST_LIMIT = 20;  // 지난 핫뉴스 최대 개수
 
     /* ===================== 아래는 수정하지 않아도 돼요 ===================== */
     const $menu = document.getElementById("menu");
@@ -257,18 +262,18 @@
       return `${s.getMonth() + 1}월 ${s.getDate()}일 ~ ${e.getMonth() + 1}월 ${e.getDate()}일`;
     }
     const thisWeek = () => weekKeyOf(new Date());
+    function weekAgo(n) {                       // n주 전 월요일 날짜
+      const w = parseDate(thisWeek());
+      w.setDate(w.getDate() - 7 * n);
+      return fmt(w);
+    }
     const byNewest = (a, b) => b.date.localeCompare(a.date) || b.id - a.id;
     const inWeek = key => articles.filter(a => weekKeyOf(parseDate(a.date)) === key).sort(byNewest);
     const hotOf = key => inWeek(key).slice(0, HOT_LIMIT);
-    function pastWeeks() {
-      const start = parseDate(thisWeek());
+    function pastWeeks() {                      // 2주 전 ~ (1 + PAST_WEEKS)주 전
       const keys = [];
-      for (let i = 1; i <= PAST_WEEKS; i++) {
-        const w = new Date(start);
-        w.setDate(w.getDate() - 7 * i);
-        keys.push(fmt(w));
-      }
-      return keys.filter(k => inWeek(k).length);   // 기사가 있는 주만
+      for (let i = 2; i <= 1 + PAST_WEEKS; i++) keys.push(weekAgo(i));
+      return keys;
     }
 
     /* ---- 화면 상태 (주소 # 뒤에 저장) ---- */
@@ -287,7 +292,7 @@
       const btn = (key, label, count) =>
         `<li style="animation-delay:${(i++) * 0.03}s"><button data-key="${esc(key)}" class="${key === activeKey ? "active" : ""}">
            <span>${label}</span>${count !== undefined ? `<span class="count">${count}</span>` : ""}</button></li>`;
-      let html = btn("hot", "🔥 이주의 핫뉴스")
+      let html = btn("hot", "📰 최신 뉴스")
                + btn("archive", "📅 지난 핫뉴스")
                + `<li class="label">범죄 유형</li>`;
       CATEGORIES.forEach(c => {
@@ -314,18 +319,11 @@
 
     /* ---- 각 화면 ---- */
     function viewHot() {
-      const key = thisWeek();
+      const key = weekAgo(1);                   // 지난주
       const list = hotOf(key);
-      let html = `<h1 class="page-title">🔥 이주의 핫뉴스</h1>
-                  <p class="page-desc">${weekLabel(key)} · 이번 주 주요 사건을 모았어요.</p>`;
-      if (list.length) {
-        html += listHTML(list, true);
-      } else {
-        const last = pastWeeks()[0];
-        html += `<div class="notice">이번 주 뉴스는 아직 준비 중이에요. 최근 주의 핫뉴스를 먼저 보여드릴게요.</div>`;
-        html += last ? `<p class="page-desc"><b>${weekLabel(last)}</b> 핫뉴스</p>` + listHTML(hotOf(last), true) : listHTML([]);
-      }
-      return html;
+      return `<h1 class="page-title">📰 최신 뉴스</h1>
+              <p class="page-desc">${weekLabel(key)} · 지난주 주요 사건이에요. 매주 월요일에 새로 바뀌어요.</p>
+              ${list.length ? listHTML(list, true) : `<ul class="list"><li class="empty">아직 등록된 최신 뉴스가 없어요.</li></ul>`}`;
     }
 
     function viewArchive() {
@@ -335,7 +333,7 @@
         .sort(byNewest)
         .slice(0, PAST_LIMIT);
       return `<h1 class="page-title">📅 지난 핫뉴스</h1>
-              <p class="page-desc">최근 ${PAST_WEEKS}주간의 기사예요. 더 이전 기사는 메뉴의 '전체'나 범죄 유형에서 볼 수 있어요.</p>
+              <p class="page-desc">최신 뉴스 이전 ${PAST_WEEKS}주간의 기사예요. 더 이전 기사는 메뉴의 '전체'나 범죄 유형에서 볼 수 있어요.</p>
               ${list.length ? listHTML(list) : `<ul class="list"><li class="empty">아직 지난 핫뉴스가 없어요.</li></ul>`}`;
     }
 
