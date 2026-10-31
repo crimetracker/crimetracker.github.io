@@ -335,7 +335,7 @@
         .sort(byNewest)
         .slice(0, PAST_LIMIT);
       return `<h1 class="page-title">📅 지난 핫뉴스</h1>
-              <p class="page-desc">전주와 전전주의 뉴스를 최신순으로 최대 ${PAST_LIMIT}개 모았어요. 더 이전 기사는 메뉴의 '전체'나 범죄 유형에서 볼 수 있어요.</p>
+              <p class="page-desc">최근 ${PAST_WEEKS}주간의 기사예요. 더 이전 기사는 메뉴의 '전체'나 범죄 유형에서 볼 수 있어요.</p>
               ${list.length ? listHTML(list) : `<ul class="list"><li class="empty">아직 지난 핫뉴스가 없어요.</li></ul>`}`;
     }
 
