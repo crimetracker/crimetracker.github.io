@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0f1b2d"/>
+      <stop offset="1" stop-color="#18263d"/>
+    </linearGradient>
+    <clipPath id="lens"><circle cx="200" cy="185" r="92"/></clipPath>
+  </defs>
+  <rect width="1200" height="400" fill="url(#bg)"/>
+  <!-- subtle grid -->
+  <g stroke="#ffffff" stroke-opacity="0.04" stroke-width="1">
+    <path d="M0 80H1200M0 160H1200M0 240H1200M0 320H1200"/>
+    <path d="M80 0V400M240 0V400M400 0V400M560 0V400M720 0V400M880 0V400M1040 0V400"/>
+  </g>
+
+  <!-- magnifier with radar inside -->
+  <g clip-path="url(#lens)">
+    <rect x="100" y="85" width="200" height="200" fill="#122339"/>
+    <g stroke="#3fa7ff" stroke-opacity="0.35" fill="none" stroke-width="2">
+      <circle cx="200" cy="185" r="30"/>
+      <circle cx="200" cy="185" r="60"/>
+      <path d="M200 90V280M105 185H295"/>
+    </g>
+    <path d="M200 185 L200 93 A92 92 0 0 1 280 140 Z" fill="#3fa7ff" fill-opacity="0.22"/>
+    <!-- map pin -->
+    <path d="M232 132c-14 0-25 11-25 25 0 19 25 44 25 44s25-25 25-44c0-14-11-25-25-25z" fill="#e5383b"/>
+    <circle cx="232" cy="157" r="9" fill="#122339"/>
+    <circle cx="165" cy="215" r="5" fill="#ffb703"/>
+    <circle cx="180" cy="150" r="4" fill="#ffb703" fill-opacity="0.7"/>
+  </g>
+  <circle cx="200" cy="185" r="92" fill="none" stroke="#e8eef6" stroke-width="14"/>
+  <path d="M266 251 L322 307" stroke="#e8eef6" stroke-width="26" stroke-linecap="round"/>
+
+  <!-- wordmark -->
+  <text x="400" y="200" font-family="Noto Sans CJK KR" font-weight="900" font-size="112" fill="#ffffff" letter-spacing="2">범죄<tspan fill="#e5383b">추적</tspan>기</text>
+  <text x="404" y="262" font-family="Noto Sans CJK KR" font-weight="500" font-size="34" fill="#9fb3cc" letter-spacing="14">CRIME TRACKER</text>
+  <rect x="404" y="288" width="64" height="5" fill="#e5383b"/>
+  <text x="484" y="296" font-family="Noto Sans CJK KR" font-weight="400" font-size="22" fill="#9fb3cc">사건·사고 뉴스 요약 정보</text>
+</svg>
