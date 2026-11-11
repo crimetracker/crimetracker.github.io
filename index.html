@@ -126,7 +126,7 @@
     /* ===== 3줄 이하: 본문 ===== */
     main { padding-top: 28px; padding-bottom: 48px; }
     .page-title { font-size: 24px; margin-bottom: 2px; }
-    .page-desc { color: var(--muted); margin-bottom: 20px; font-size: 14px; }
+    .page-desc { color: var(--muted); margin-bottom: 20px; font-size: 14px; word-break: keep-all; }
     .notice {
       background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412;
       padding: 10px 14px; border-radius: 8px; font-size: 14px; margin-bottom: 16px;
@@ -164,8 +164,9 @@
     .source a { color: var(--accent); }
 
     /* ===== 게시판 ===== */
-    .board-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-    .board-head .btn { margin-top: 12px; }   /* 글쓰기 버튼 위치 (숫자가 클수록 아래로) */
+    .board-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-bottom: 6px; }
+    .board-head .page-title { margin-bottom: 0; }
+    .board-head .btn { flex-shrink: 0; }
     .btn {
       background: var(--dark); color: #fff; border: 0; border-radius: 10px;
       padding: 10px 16px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
@@ -216,6 +217,7 @@
     /* ===== 모바일 ===== */
     @media (max-width: 600px) {
       .inner { padding: 0 16px; }
+      main.inner { padding-top: 24px; padding-bottom: 40px; }   /* 모바일: 본문 위아래 여백 */
       .site-header .inner { height: 60px; }
       .brand-main { font-size: 20px; }
       .brand-sub { font-size: calc(20px / 3); }
@@ -224,8 +226,7 @@
       .menu-btn { padding: 10px 12px; }
       .detail { padding: 20px; }
       .item .thumb { width: 88px; height: 64px; }
-            .board-head { flex-wrap: nowrap; align-items: flex-end; }      /* 모바일: 글쓰기 버튼을 제목 옆에 */
-      .board-head .btn { margin-top: 0; flex-shrink: 0; padding: 8px 12px; font-size: 14px; }
+      .board-head .btn { padding: 8px 12px; font-size: 14px; }
     }
   </style>
 </head>
@@ -288,7 +289,7 @@
        - 비워두면: 기사는 articles.json에서 읽고, 게시판은 '준비 중'으로 보여요.
        - 채우면:   기사는 구글 시트 '기사' 탭에서 읽고, 게시판이 작동해요.
                    (시트를 못 읽으면 자동으로 articles.json을 대신 읽어요) */
-    const API_URL = "https://script.google.com/macros/s/AKfycbzwz8774cRSV8-fXr44KAr6Rq0sOHnon1suwsEj6dWMCKdIuq039QMXdReLFK9cfJt9aA/exec";
+    const API_URL = "";
 
     /* ===================== 아래는 수정하지 않아도 돼요 ===================== */
     const $menu = document.getElementById("menu");
@@ -404,12 +405,10 @@
                 <div class="notice">게시판은 준비 중이에요. 곧 열릴 예정이에요.</div>`;
       }
       return `<div class="board-head">
-          <div>
-            <h1 class="page-title">💬 게시판</h1>
-            <p class="page-desc">자유롭게 의견을 남겨 주세요. 관리자 승인 후 게시돼요.</p>
-          </div>
+          <h1 class="page-title">💬 게시판</h1>
           <button class="btn" data-write>✏️ 글쓰기</button>
         </div>
+        <p class="page-desc">자유롭게 의견을 남겨 주세요. 관리자 승인 후 게시돼요.</p>
         <form class="post-form" id="postForm" autocomplete="off">
           <div class="notice">실명·연락처 등 개인정보, 특정인 비방, 확인되지 않은 신상 정보가 담긴 글은 게시되지 않아요.</div>
           <label for="pNick">닉네임</label>
