@@ -165,7 +165,7 @@
 
     /* ===== 게시판 ===== */
     .board-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; }
-        .board-head .btn { margin-top: 12px; }   /* 글쓰기 버튼 위치 (숫자가 클수록 아래로) */
+    .board-head .btn { margin-top: 12px; }   /* 글쓰기 버튼 위치 (숫자가 클수록 아래로) */
     .btn {
       background: var(--dark); color: #fff; border: 0; border-radius: 10px;
       padding: 10px 16px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit;
@@ -187,24 +187,31 @@
     }
     .post-form input:focus, .post-form textarea:focus { outline: 2px solid var(--accent); border-color: transparent; background: #fff; }
     .post-form textarea { min-height: 140px; resize: vertical; }
-    .post-form .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+    .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
     .form-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 14px; }
     .form-foot .btns { display: flex; gap: 8px; }
     .counter { font-size: 13px; color: var(--muted); }
     .form-msg { font-size: 14px; margin-top: 10px; }
     .form-msg.ok { color: #15803d; }
     .form-msg.err { color: var(--accent); }
-    .post { background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
-    .post[open] { border-color: var(--accent); }
-    .post summary { list-style: none; cursor: pointer; padding: 16px 20px; }
-    .post summary::-webkit-details-marker { display: none; }
-    .post h3 { font-size: 16px; margin-top: 2px; }
-    .post-body { padding: 0 20px 18px; white-space: pre-wrap; word-break: break-word; }
-    .reply {
-      margin: 0 20px 18px; padding: 10px 14px; border-radius: 6px;
-      background: #f8fafc; border-left: 4px solid var(--accent);
-      font-size: 14px; white-space: pre-wrap; word-break: break-word;
+    /* 게시글 상세 (기사 상세와 같은 모양) */
+    .post-body { white-space: pre-wrap; word-break: break-word; margin-bottom: 20px; }
+    .pre { white-space: pre-wrap; word-break: break-word; margin-top: 4px; }
+
+    /* 댓글 */
+    .comments { margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
+    .comments h3 { font-size: 16px; margin-bottom: 12px; }
+    .comment-list { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .comment-list li { background: #f8fafc; border-radius: 8px; padding: 10px 14px; }
+    .comment-list p { white-space: pre-wrap; word-break: break-word; font-size: 15px; margin-top: 2px; }
+    .no-comment { color: var(--muted); font-size: 14px; margin-bottom: 16px; }
+    .comment-form input, .comment-form textarea {
+      width: 100%; padding: 10px 12px; font-size: 15px; font-family: inherit;
+      border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
     }
+    .comment-form input { max-width: 240px; margin-bottom: 8px; }
+    .comment-form textarea { min-height: 80px; resize: vertical; }
+    .comment-form input:focus, .comment-form textarea:focus { outline: 2px solid var(--accent); border-color: transparent; background: #fff; }
 
     /* ===== 모바일 ===== */
     @media (max-width: 600px) {
@@ -279,7 +286,7 @@
        - 비워두면: 기사는 articles.json에서 읽고, 게시판은 '준비 중'으로 보여요.
        - 채우면:   기사는 구글 시트 '기사' 탭에서 읽고, 게시판이 작동해요.
                    (시트를 못 읽으면 자동으로 articles.json을 대신 읽어요) */
-    const API_URL = "https://script.google.com/macros/s/AKfycbzwz8774cRSV8-fXr44KAr6Rq0sOHnon1suwsEj6dWMCKdIuq039QMXdReLFK9cfJt9aA/exec";
+    const API_URL = "";
 
     /* ===================== 아래는 수정하지 않아도 돼요 ===================== */
     const $menu = document.getElementById("menu");
@@ -331,6 +338,7 @@
       if (h.startsWith("cat=")) return { view: "cat", cat: h.slice(4) };
       if (h === "archive") return { view: "archive" };
       if (h === "board") return { view: "board" };
+      if (h.startsWith("post=")) return { view: "post", id: Number(h.slice(5)) };
       return { view: "hot" };
     }
     function go(hash) { location.hash = hash; }
@@ -430,17 +438,98 @@
         if (!d.ok) throw new Error();
         $list.innerHTML = d.posts.length
           ? d.posts.map(p => `
-            <li><details class="post">
-              <summary>
-                <div class="meta">${esc(p.nickname)} · ${esc(p.date)}</div>
+            <li class="item" data-post="${p.id}">
+              <div class="text">
+                <div class="meta">${esc(p.nickname)} · ${esc(p.date)}${p.comments ? ` · 💬 ${p.comments}` : ""}</div>
                 <h3>${esc(p.title)}</h3>
-              </summary>
-              <div class="post-body">${esc(p.body)}</div>
-              ${p.reply ? `<div class="reply"><b>관리자 답변</b>\n${esc(p.reply)}</div>` : ""}
-            </details></li>`).join("")
+                <div class="more">자세히 보기 →</div>
+              </div>
+            </li>`).join("")
           : `<li class="empty">아직 게시된 글이 없어요. 첫 글을 남겨 주세요!</li>`;
       } catch (err) {
         $list.innerHTML = `<li class="empty">글을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</li>`;
+      }
+    }
+
+    function viewPostShell() {
+      return `<button class="back" data-back="board">← 게시판으로</button>
+              <div id="postDetail"><p class="empty">글을 불러오는 중이에요…</p></div>`;
+    }
+
+    async function loadPost(id) {
+      const $box = document.getElementById("postDetail");
+      if (!$box) return;
+      try {
+        const r = await fetch(API_URL + "?action=post&id=" + encodeURIComponent(id));
+        const d = await r.json();
+        if (!d.ok) { $box.innerHTML = `<div class="notice">${esc(d.error || "글을 찾을 수 없어요.")}</div>`; return; }
+        const p = d.post;
+        $box.innerHTML = `
+          <article class="detail">
+            <div class="meta"><span class="tag">게시판</span>${esc(p.nickname)} · ${esc(p.date)}</div>
+            <h2>${esc(p.title)}</h2>
+            <div class="post-body">${esc(p.body)}</div>
+            ${p.reply ? `<div class="summary-box"><b>관리자 답변</b><div class="pre">${esc(p.reply)}</div></div>` : ""}
+            <section class="comments">
+              <h3>댓글 ${p.comments.length}</h3>
+              ${p.comments.length
+                ? `<ul class="comment-list">${p.comments.map(c => `
+                    <li><div class="meta">${esc(c.nickname)} · ${esc(c.date)}</div><p>${esc(c.body)}</p></li>`).join("")}</ul>`
+                : `<p class="no-comment">아직 댓글이 없어요. 첫 댓글을 남겨 주세요.</p>`}
+              <form class="comment-form" id="commentForm" data-post-id="${p.id}" autocomplete="off">
+                <input id="cNick" maxlength="20" placeholder="닉네임 (비워두면 익명)">
+                <textarea id="cBody" maxlength="300" placeholder="댓글은 관리자 승인 후 보여요. 실명·신상 정보와 비방은 게시되지 않아요." required></textarea>
+                <div class="hp" aria-hidden="true"><input id="cWebsite" tabindex="-1" autocomplete="off"></div>
+                <div class="form-foot">
+                  <span class="counter" id="cCount">0 / 300</span>
+                  <button type="submit" class="btn">댓글 등록</button>
+                </div>
+                <div class="form-msg" id="cMsg"></div>
+              </form>
+            </section>
+          </article>`;
+      } catch (err) {
+        $box.innerHTML = `<div class="notice">글을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.</div>`;
+      }
+    }
+
+    async function sendToSheet(data) {
+      const r = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(data)
+      });
+      return r.json();
+    }
+
+    async function submitComment(form) {
+      const $msg = document.getElementById("cMsg");
+      const $btn = form.querySelector('button[type="submit"]');
+      const data = {
+        type: "comment",
+        postId: Number(form.dataset.postId),
+        nickname: document.getElementById("cNick").value.trim(),
+        body: document.getElementById("cBody").value.trim(),
+        website: document.getElementById("cWebsite").value
+      };
+      if (!data.body) {
+        $msg.className = "form-msg err"; $msg.textContent = "댓글 내용을 입력해 주세요.";
+        return;
+      }
+      $btn.disabled = true;
+      $msg.className = "form-msg"; $msg.textContent = "등록하는 중이에요…";
+      try {
+        const d = await sendToSheet(data);
+        if (!d.ok) { $msg.className = "form-msg err"; $msg.textContent = d.error || "등록하지 못했어요."; return; }
+        form.reset();
+        document.getElementById("cCount").textContent = "0 / 300";
+        $msg.className = "form-msg ok";
+        $msg.textContent = "등록되었어요! 관리자 승인 후 댓글이 보여요.";
+      } catch (err) {
+        $msg.className = "form-msg err";
+        $msg.textContent = "등록하지 못했어요. 잠시 후 다시 시도해 주세요.";
+      } finally {
+        $btn.disabled = false;
       }
     }
 
@@ -448,6 +537,7 @@
       const $msg = document.getElementById("pMsg");
       const $btn = form.querySelector('button[type="submit"]');
       const data = {
+        type: "post",
         nickname: document.getElementById("pNick").value.trim(),
         title: document.getElementById("pTitle").value.trim(),
         body: document.getElementById("pBody").value.trim(),
@@ -460,12 +550,7 @@
       $btn.disabled = true;
       $msg.className = "form-msg"; $msg.textContent = "등록하는 중이에요…";
       try {
-        const r = await fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "text/plain;charset=utf-8" },
-          body: JSON.stringify(data)
-        });
-        const d = await r.json();
+        const d = await sendToSheet(data);
         if (!d.ok) {
           $msg.className = "form-msg err"; $msg.textContent = d.error || "등록하지 못했어요.";
           return;
@@ -531,6 +616,8 @@
         html = viewArchive(); active = "archive";
       } else if (st.view === "board") {
         html = viewBoard(); active = "board";
+      } else if (st.view === "post") {
+        html = API_URL ? viewPostShell() : viewBoard(); active = "board";
       } else {
         html = viewHot(); active = "hot";
       }
@@ -538,7 +625,8 @@
       renderMenu(active);
       $content.innerHTML = html;
       closeMenu();
-      if (active === "board" && API_URL) loadPosts();
+      if (API_URL && st.view === "board" && !searchText.trim()) loadPosts();
+      if (API_URL && st.view === "post" && !searchText.trim()) loadPost(st.id);
     }
 
     function openMenu() {
@@ -561,10 +649,13 @@
       window.scrollTo(0, 0);
     });
     $content.addEventListener("click", e => {
-      if (e.target.closest("[data-back]")) {
-        if (navCount > 0) history.back(); else go("");
+      const back = e.target.closest("[data-back]");
+      if (back) {
+        if (navCount > 0) history.back(); else go(back.dataset.back || "");
         return;
       }
+      const postItem = e.target.closest(".item[data-post]");
+      if (postItem) { go("post=" + postItem.dataset.post); window.scrollTo(0, 0); return; }
       const item = e.target.closest(".item");
       if (item) { go("article=" + item.dataset.id); window.scrollTo(0, 0); return; }
       if (e.target.closest("[data-write]")) {
@@ -578,19 +669,22 @@
       }
     });
     $content.addEventListener("submit", e => {
-      if (e.target.id !== "postForm") return;
-      e.preventDefault();
-      submitPost(e.target);
+      if (e.target.id === "postForm") { e.preventDefault(); submitPost(e.target); }
+      if (e.target.id === "commentForm") { e.preventDefault(); submitComment(e.target); }
     });
     $content.addEventListener("input", e => {
       if (e.target.id === "pBody") {
         document.getElementById("pCount").textContent = e.target.value.length + " / 1000";
       }
+      if (e.target.id === "cBody") {
+        document.getElementById("cCount").textContent = e.target.value.length + " / 300";
+      }
     });
     $search.addEventListener("input", () => {
       searchText = $search.value;
       $searchClear.classList.toggle("show", !!searchText);
-      if (getState().view === "article") go("");
+      const v = getState().view;
+      if (v === "article" || v === "post") go("");
       else render();
     });
     $searchClear.onclick = () => { clearSearch(); render(); $search.focus(); };
