@@ -160,6 +160,14 @@
     .keywords { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
     .keywords span { font-size: 13px; background: #f1f5f9; color: #334155; padding: 3px 10px; border-radius: 999px; }
     .detail .body p { margin-bottom: 14px; }
+        /* 수법·예방법·법적 내용 */
+    .guide { margin-top: 24px; display: grid; gap: 12px; }
+    .guide-box { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: #fbfcfe; }
+    .guide-box h3 { font-size: 15px; margin-bottom: 6px; }
+    .guide-box p, .guide-box li { font-size: 15px; color: #334155; }
+    .guide-box ul { padding-left: 20px; }
+    .guide-box li { margin-bottom: 4px; }
+    .guide-note { font-size: 12px; color: var(--muted); }
     .source { margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
     .source a { color: var(--accent); }
 
@@ -585,6 +593,17 @@
               ${listHTML(list)}`;
     }
 
+        // 범죄 수법 · 예방법 · 법적 내용 (내용이 있는 칸만 보여줘요)
+    function guideHTML(a) {
+      const prev = a.prevention || [];
+      if (!a.method && !prev.length && !a.law) return "";
+      return `<section class="guide">
+          ${a.method ? `<div class="guide-box"><h3>🔍 범죄 수법</h3><p>${esc(a.method)}</p></div>` : ""}
+          ${prev.length ? `<div class="guide-box"><h3>🛡️ 예방 · 대처 방법</h3><ul>${prev.map(t => `<li>${esc(t)}</li>`).join("")}</ul></div>` : ""}
+          ${a.law ? `<div class="guide-box"><h3>⚖️ 법적 내용</h3><p>${esc(a.law)}</p></div>` : ""}
+          <p class="guide-note">※ 수법·예방·법 정보는 AI가 정리한 일반 정보예요. 정확한 내용은 경찰(112)이나 법률 전문가에게 확인하세요.</p>
+        </section>`;
+    }
     function viewArticle(id) {
       const a = articles.find(x => x.id === id);
       if (!a) return `<div class="notice">기사를 찾을 수 없어요.</div>`;
@@ -597,6 +616,7 @@
           <div class="summary-box">${esc(a.summary)}</div>
           ${(a.keywords || []).length ? `<div class="keywords">${a.keywords.map(k => `<span>#${esc(k)}</span>`).join("")}</div>` : ""}
           <div class="body">${(a.content || []).map(p => `<p>${esc(p)}</p>`).join("")}</div>
+                    ${guideHTML(a)}
           <div class="source">출처: <a href="${esc(a.sourceUrl)}" target="_blank" rel="noopener">${esc(a.sourceName)}</a></div>
         </article>`;
     }
