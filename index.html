@@ -703,7 +703,7 @@
         try {
           const r = await fetch(API_URL + "?action=articles");
           const d = await r.json();
-          if (d.ok && d.articles.length) return d.articles;
+                    if (d.ok) return d.articles;          // 시트에서 읽었으면 0개여도 그대로 사용
         } catch (err) { /* 시트를 못 읽으면 아래 articles.json으로 */ }
       }
       const r = await fetch("articles.json", { cache: "no-store" });
