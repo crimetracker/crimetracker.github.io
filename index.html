@@ -124,7 +124,7 @@
     .overlay.show { opacity: 1; pointer-events: auto; }
 
     /* ===== 3줄 이하: 본문 ===== */
-     main.inner { padding-top: 28px; padding-bottom: 40px; }   /* 본문 위아래 여백 */
+    main.inner { padding-top: 28px; padding-bottom: 48px; }   /* 본문 위아래 여백 */
     .page-title { font-size: 24px; margin-bottom: 2px; }
     .page-desc { color: var(--muted); margin-bottom: 20px; font-size: 14px; word-break: keep-all; }
     .notice {
@@ -160,7 +160,7 @@
     .keywords { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
     .keywords span { font-size: 13px; background: #f1f5f9; color: #334155; padding: 3px 10px; border-radius: 999px; }
     .detail .body p { margin-bottom: 14px; }
-        /* 수법·예방법·법적 내용 */
+    /* 수법·예방법·법적 내용 */
     .guide { margin-top: 24px; display: grid; gap: 12px; }
     .guide-box { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; background: #fbfcfe; }
     .guide-box h3 { font-size: 15px; margin-bottom: 6px; }
@@ -297,7 +297,7 @@
        - 비워두면: 기사는 articles.json에서 읽고, 게시판은 '준비 중'으로 보여요.
        - 채우면:   기사는 구글 시트 '기사' 탭에서 읽고, 게시판이 작동해요.
                    (시트를 못 읽으면 자동으로 articles.json을 대신 읽어요) */
-    const API_URL = "https://script.google.com/macros/s/AKfycbzwz8774cRSV8-fXr44KAr6Rq0sOHnon1suwsEj6dWMCKdIuq039QMXdReLFK9cfJt9aA/exec";
+    const API_URL = "";
 
     /* ===================== 아래는 수정하지 않아도 돼요 ===================== */
     const $menu = document.getElementById("menu");
@@ -416,9 +416,9 @@
           <h1 class="page-title">💬 게시판</h1>
           <button class="btn" data-write>✏️ 글쓰기</button>
         </div>
-        <p class="page-desc">자유롭게 의견을 남겨 주세요. 관리자 승인 후 게시돼요.</p>
+        <p class="page-desc">자유롭게 의견을 남겨 주세요. 글은 바로 게시되고, 규칙에 어긋나는 글은 관리자가 내릴 수 있어요.</p>
         <form class="post-form" id="postForm" autocomplete="off">
-          <div class="notice">실명·연락처 등 개인정보, 특정인 비방, 확인되지 않은 신상 정보가 담긴 글은 게시되지 않아요.</div>
+          <div class="notice">실명·연락처 등 개인정보, 특정인 비방, 확인되지 않은 신상 정보가 담긴 글은 관리자가 내리거나 게시되지 않을 수 있어요.</div>
           <label for="pNick">닉네임</label>
           <input id="pNick" maxlength="20" placeholder="비워두면 '익명'으로 올라가요">
           <label for="pTitle">제목</label>
@@ -487,7 +487,7 @@
                 : `<p class="no-comment">아직 댓글이 없어요. 첫 댓글을 남겨 주세요.</p>`}
               <form class="comment-form" id="commentForm" data-post-id="${p.id}" autocomplete="off">
                 <input id="cNick" maxlength="20" placeholder="닉네임 (비워두면 익명)">
-                <textarea id="cBody" maxlength="300" placeholder="댓글은 관리자 승인 후 보여요. 실명·신상 정보와 비방은 게시되지 않아요." required></textarea>
+                <textarea id="cBody" maxlength="300" placeholder="실명·신상 정보나 비방이 담긴 댓글은 관리자가 내릴 수 있어요." required></textarea>
                 <div class="hp" aria-hidden="true"><input id="cWebsite" tabindex="-1" autocomplete="off"></div>
                 <div class="form-foot">
                   <span class="counter" id="cCount">0 / 300</span>
@@ -530,10 +530,14 @@
       try {
         const d = await sendToSheet(data);
         if (!d.ok) { $msg.className = "form-msg err"; $msg.textContent = d.error || "등록하지 못했어요."; return; }
-        form.reset();
-        document.getElementById("cCount").textContent = "0 / 300";
-        $msg.className = "form-msg ok";
-        $msg.textContent = "등록되었어요! 관리자 승인 후 댓글이 보여요.";
+        await loadPost(data.postId);                           // 댓글 목록을 새로 불러와요
+        const $m = document.getElementById("cMsg");
+        if ($m) {
+          $m.className = "form-msg ok";
+          $m.textContent = d.published === false
+            ? "등록되었어요. 개인정보가 의심되는 내용이 있어 관리자 확인 후 보여요."
+            : "댓글이 등록되었어요!";
+        }
       } catch (err) {
         $msg.className = "form-msg err";
         $msg.textContent = "등록하지 못했어요. 잠시 후 다시 시도해 주세요.";
@@ -567,7 +571,10 @@
         form.reset();
         document.getElementById("pCount").textContent = "0 / 1000";
         $msg.className = "form-msg ok";
-        $msg.textContent = "등록되었어요! 관리자 승인 후 게시판에 보여요.";
+        $msg.textContent = d.published === false
+          ? "등록되었어요. 개인정보가 의심되는 내용이 있어 관리자 확인 후 게시돼요."
+          : "게시되었어요!";
+        loadPosts();                                           // 목록을 새로 불러와 내 글이 바로 보이게 해요
       } catch (err) {
         $msg.className = "form-msg err";
         $msg.textContent = "등록하지 못했어요. 잠시 후 다시 시도해 주세요.";
@@ -593,7 +600,7 @@
               ${listHTML(list)}`;
     }
 
-        // 범죄 수법 · 예방법 · 법적 내용 (내용이 있는 칸만 보여줘요)
+    // 범죄 수법 · 예방법 · 법적 내용 (내용이 있는 칸만 보여줘요)
     function guideHTML(a) {
       const prev = a.prevention || [];
       if (!a.method && !prev.length && !a.law) return "";
@@ -604,6 +611,7 @@
           <p class="guide-note">※ 수법·예방·법 정보는 AI가 정리한 일반 정보예요. 정확한 내용은 경찰(112)이나 법률 전문가에게 확인하세요.</p>
         </section>`;
     }
+
     function viewArticle(id) {
       const a = articles.find(x => x.id === id);
       if (!a) return `<div class="notice">기사를 찾을 수 없어요.</div>`;
@@ -616,7 +624,7 @@
           <div class="summary-box">${esc(a.summary)}</div>
           ${(a.keywords || []).length ? `<div class="keywords">${a.keywords.map(k => `<span>#${esc(k)}</span>`).join("")}</div>` : ""}
           <div class="body">${(a.content || []).map(p => `<p>${esc(p)}</p>`).join("")}</div>
-                    ${guideHTML(a)}
+          ${guideHTML(a)}
           <div class="source">출처: <a href="${esc(a.sourceUrl)}" target="_blank" rel="noopener">${esc(a.sourceName)}</a></div>
         </article>`;
     }
@@ -723,7 +731,7 @@
         try {
           const r = await fetch(API_URL + "?action=articles");
           const d = await r.json();
-                    if (d.ok) return d.articles;          // 시트에서 읽었으면 0개여도 그대로 사용
+          if (d.ok) return d.articles;          // 시트에서 읽었으면 0개여도 그대로 사용
         } catch (err) { /* 시트를 못 읽으면 아래 articles.json으로 */ }
       }
       const r = await fetch("articles.json", { cache: "no-store" });
